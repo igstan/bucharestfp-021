@@ -1,0 +1,81 @@
+<EXP> ::=
+    <EXP> <EXP> ; function application
+  | <EXP> "+" <EXP>
+  | <EXP> "-" <EXP>
+  | "fn" <VAR> "=>" <EXP>
+  | "if" <EXP> "then" <EXP> "else" <EXP>
+  | "let" "val" <VAR> "=" <EXP> "in" <EXP> "end"
+  | "(" <EXP> ")"
+  | <BOOL>
+  | <INT>
+  | <VAR>
+
+
+; ------------------------------------------------------------------------------
+; Grammar with correct precedence of function application and infix expressions.
+; ------------------------------------------------------------------------------
+
+; expressions
+<EXP> ::=
+    <INFEXP>
+  | "fn" <VAR> "=>" <EXP>
+  | "if" <EXP> "then" <EXP> "else" <EXP>
+
+; infix expressions
+<INFEXP> ::=
+    <INFEXP> "+" <INFEXP>
+  | <INFEXP> "-" <INFEXP>
+  | <APPEXP>
+
+; function application
+<APPEXP> ::=
+    <APPEXP> <ATEXP>
+  | <ATEXP>
+
+; "atomic" expressions
+<ATEXP> ::=
+    "let" "val" <VAR> "=" <EXP> "in" <EXP> "end"
+  | "(" <EXP> ")"
+  | <BOOL>
+  | <INT>
+  | <VAR>
+
+; app = app var | var
+; -------------------
+; app      = var app-tail
+; app-tail = var app-tail | ""
+; A = Aa|b
+; A = b T
+; T = a T | ""
+
+
+; ------------------------------------------------------------------------------
+; Grammar where left-recursion has been eliminated. However, this grammar has
+; switch from left to right associativity for function application and infix
+; expressions, so the parser must fix this.
+; ------------------------------------------------------------------------------
+
+; expressions
+<EXP> ::=
+    <INFEXP>
+  | "fn" <VAR> "=>" <EXP>
+  | "if" <EXP> "then" <EXP> "else" <EXP>
+
+; infix expressions
+<INFEXP> ::= <APPEXP> <INFTAIL>
+<INFTAIL> ::=
+    "+" <INFEXP> <INFTAIL>
+  | "-" <INFEXP> <INFTAIL>
+  | ""
+
+; function application
+<APPEXP> ::= <ATEXP> <APPTAIL>
+<APPTAIL> ::= <ATEXP> <APPTAIL> | ""
+
+; "atomic" expressions
+<ATEXP> ::=
+    "let" "val" <VAR> "=" <EXP> "in" <EXP> "end"
+  | "(" <EXP> ")"
+  | <BOOL>
+  | <INT>
+  | <VAR>
